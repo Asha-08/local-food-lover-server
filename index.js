@@ -51,6 +51,26 @@ async function run() {
       res.send(result);
     })
 
+    // my reviews
+
+    app.get('/my-reviews',async(req,res)=>{
+      const email = req.query.email;
+      const result = await reviewCollection.find({created_by:email}).toArray()
+      res.send(result);
+    })
+
+    // post method
+
+    app.post('/reviews',async(req,res)=>{
+      const data = req.body
+      // console.log(data)
+      const result =await reviewCollection.insertOne(data)
+      res.send({
+        success:true,
+        result
+      })
+    })
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
