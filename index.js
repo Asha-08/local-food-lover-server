@@ -108,7 +108,17 @@ async function run() {
         result
       })
     })
-    
+
+    // search
+
+    app.get("/search",async(req,res)=>{
+      const search_text = req.query.search
+      const query = {
+        foodName: { $regex: search_text, $options: "i" }
+      };
+      const result = await reviewCollection.find(query).toArray()
+      res.send(result)
+    });
 
 
     // Send a ping to confirm a successful connection
