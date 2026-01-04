@@ -7,7 +7,7 @@ const port = process.env.PORT || 3000;
 
 // middleware
 app.use(cors({
-    origin: ["http://localhost:5173","https://warm-meerkat-0c057b.netlify.app"],
+    origin: ["http://localhost:5173","https://chipper-shortbread-a1309d.netlify.app"],
     credentials: true,
   }));
 app.use(express.json());
@@ -30,9 +30,67 @@ async function run() {
 
     const db = client.db("local-food-lover-db");
     const reviewCollection = db.collection("reviews");
-
     const favoriteCollection = db.collection("favorites");
+    const usersCollection = db.collection("users");
 
+
+    // users api
+
+    // GET /users?email=...
+app.get("/users", async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) return res.status(400).send({ message: "Email required" });
+
+  const user = await usersCollection.findOne({ email });
+
+  if (!user) return res.status(404).send({ message: "User not found" });
+
+  res.send(user);
+});
+
+
+    app.post("/users", async (req, res) => {
+  const user = req.body;
+
+  const existingUser = await usersCollection.findOne({
+    email: user.email,
+  });
+
+  if (existingUser) {
+    return res.send({ message: "User already exists" });
+  }
+
+  const result = await usersCollection.insertOne(user);
+  res.send(result);
+});
+
+
+// PATCH /users - update only name & photo
+app.patch("/users", async (req, res) => {
+  const { email, name, photoURL } = req.body;
+
+  if (!email) return res.status(400).send({ message: "Email required" });
+
+  const filter = { email };
+  const updateDoc = {
+    $set: {
+      name,
+      photoURL,
+      updatedAt: new Date(),
+    },
+  };
+
+  const result = await usersCollection.updateOne(filter, updateDoc);
+  res.send(result);
+});
+
+
+
+
+
+
+// get review collection
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection
         .find({})
